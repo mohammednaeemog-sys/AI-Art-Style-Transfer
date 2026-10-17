@@ -2,88 +2,81 @@
 
 **Author:** Mohammed Naeem
 
-A free, local-first image-stylization app built with Python, Gradio, PyTorch, Diffusers, Stable Diffusion, ControlNet, and selected style adapters (LoRAs).
+A local-first image-stylization app built with Python, Gradio, PyTorch, Diffusers, Stable Diffusion, ControlNet, and selected pretrained style models.
 
-The web interface runs on your own computer. You upload a photo, choose a style, inspect the result, and download it. You can optionally publish a single image you have manually approved to the public GitHub repository.
+Upload a photograph, select an artistic style, adjust the transformation settings, preview the result, and download it. The application runs inference on your computer; it does not require a paid image-generation API. An internet connection is needed for the initial package and model downloads.
 
-> **Important quality note:** artistic style transfer does not have a universal “95% accuracy” score. This is image generation, not a classification task with a universally correct answer. Results vary by photo, selected model, model version, and settings. No method here guarantees identical faces, exact text, or preservation of every small object. Review each result before sharing it.
+> **Honest quality statement:** there is no universal “95% accuracy” score for artistic style transfer. This is image generation, not a classification task with a single correct answer. Results depend on the source image, model, adapter, settings, software versions, and available hardware. The app cannot guarantee identical faces, exact lettering, or preservation of every small object. Inspect outputs before using or sharing them.
+
+---
 
 ## Contents
 
-- [1. What is included](#1-what-is-included)
-- [2. The most important thing to know before reinstalling](#2-the-most-important-thing-to-know-before-reinstalling)
-- [3. Install from GitHub on a completely fresh Windows PC](#3-install-from-github-on-a-completely-fresh-windows-pc)
-- [4. Start the app](#4-start-the-app)
-- [5. How model downloads work](#5-how-model-downloads-work)
-- [6. Update the app later with git pull](#6-update-the-app-later-with-git-pull)
-- [7. Use the app from a phone](#7-use-the-app-from-a-phone)
-- [8. Run on macOS or Linux](#8-run-on-macos-or-linux)
-- [9. Available styles and honest limitations](#9-available-styles-and-honest-limitations)
-- [10. Local files, privacy, and GitHub publishing](#10-local-files-privacy-and-github-publishing)
-- [11. Troubleshooting](#11-troubleshooting)
-- [12. Model sources and licenses](#12-model-sources-and-licenses)
+1. [Features](#1-features)
+2. [What you need](#2-what-you-need)
+3. [Install from GitHub on a fresh Windows PC](#3-install-from-github-on-a-fresh-windows-pc)
+4. [Run the app](#4-run-the-app)
+5. [Available styles and how they work](#5-available-styles-and-how-they-work)
+6. [Recommended settings](#6-recommended-settings)
+7. [Run the app from a phone](#7-run-the-app-from-a-phone)
+8. [Update the app with Git](#8-update-the-app-with-git)
+9. [Local files, privacy, and publishing examples](#9-local-files-privacy-and-publishing-examples)
+10. [Gallery and sample outputs](#10-gallery-and-sample-outputs)
+11. [Troubleshooting](#11-troubleshooting)
+12. [Models, access, and licensing](#12-models-access-and-licensing)
+13. [Known limitations](#13-known-limitations)
 
 ---
 
-## 1. What is included
+## 1. Features
 
-The main files in the repository are:
+- Gradio browser interface.
+- Original image and transformed-result previews.
+- Downloadable result images.
+- Multiple style-specific paths: fixed-style neural models, Stable Diffusion image-to-image with Canny ControlNet, style LoRAs where compatible, and experimental VGG19 reference style transfer.
+- Controls for art-style strength, composition/edge preservation, diffusion steps, and random or repeatable seed values.
+- Local result storage in `outputs/`.
+- Optional manual GitHub publishing for a single reviewed image at a time.
+- Local-only mode by default; optional access over a trusted private Wi-Fi network.
 
-```text
-AI-Art-Style-Transfer/
-├── app.py                 # Main application and browser interface
-├── requirements.txt       # Python package requirements
-├── README.md              # This guide
-├── .gitignore             # Prevents local/private files from being committed
-├── examples/              # Only manually approved public showcase images
-├── outputs/               # Generated images; created locally and ignored by Git
-└── models/                # Some local model files/cache; ignored by Git
-```
+The main application file is `app.py`. The Python package versions are constrained in `requirements.txt` to reduce known compatibility problems between Diffusers, Transformers, PEFT, and Hugging Face Hub.
 
-Some of those folders are created automatically by the app when it starts. Empty folders or local cache folders might not appear in a fresh Git clone.
+## 2. What you need
 
-### What you need
+- **Git** to download and update the source.
+- **Python 3.12 recommended** for a predictable clean setup with the dependency set in this repository. Other Python versions may work, but are not guaranteed by this guide.
+- **Internet access** for first-time package and model downloads.
+- An NVIDIA GPU is recommended for diffusion-based styles. CPU fallback may work, but diffusion generation can be very slow.
+- Several gigabytes of free disk space. More styles/models mean more model weights and cache files.
+- Patience for the first run: downloading and loading a base model, ControlNet, and a style adapter can take time.
 
-- Git, to download and update the source repository.
-- Python 3.12 recommended for a predictable setup with the pinned Diffusers stack. Python 3.13 may work with compatible PyTorch wheels, but on a fresh PC start with Python 3.12 if you can.
-- Internet access for initial package and model downloads.
-- An NVIDIA GPU is recommended for diffusion-based styles. CPU mode may work, but generation can be very slow.
-- Several GB of free disk space; using multiple base models/adapters can require considerably more.
-
----
-
-## 2. The most important thing to know before reinstalling
-
-**You do not need the old local folder to reinstall the app.** The source code is stored in GitHub. On a new or wiped PC, clone the repository into any folder you choose, create a new Python virtual environment, install dependencies, and start the app. The commands below use `$HOME` (your account's home folder) instead of hard-coding a user-specific Windows folder.
-
-However, GitHub only contains files that were committed and pushed. It does **not** contain your ignored private photos, generated `outputs/`, model caches, `.venv`, or downloaded model weights. If you delete your computer's files, local photos and generated results that you did not back up may be lost. Back them up separately if you need to keep them.
+The app selects CUDA when PyTorch reports that CUDA is available; otherwise, it uses CPU. An Apple Silicon/MPS-specific acceleration path is not explicitly configured in the current app.
 
 ---
 
-## 3. Install from GitHub on a completely fresh Windows PC
+## 3. Install from GitHub on a fresh Windows PC
 
-Follow this section if you have deleted the project folder, are setting up a different computer, or want to reinstall cleanly.
+**You do not need your old project folder.** If you delete the local folder or replace your computer, you can recover the source from GitHub. The repository does not restore private photos, generated images, a virtual environment, or previously downloaded model weights; back up those separately if you want to keep them.
 
-### Step A — Install prerequisites
+### Step A — Install Git and Python
 
-1. Install **Git for Windows**: https://git-scm.com/download/win
-2. Install **Python 3.12** from: https://www.python.org/downloads/windows/
-   - During installation, enable the Python launcher (`py`) if the installer offers that option.
-3. If the PC has an NVIDIA GPU, update its NVIDIA driver.
-4. Open a new **PowerShell** terminal (Windows Terminal or the VS Code terminal is fine).
+1. Install Git for Windows: https://git-scm.com/download/win
+2. Install Python 3.12: https://www.python.org/downloads/windows/
+3. If the PC has an NVIDIA GPU, install/update its NVIDIA driver.
+4. Open a new PowerShell terminal, Windows Terminal, or the VS Code terminal.
 
-Check Git and Python:
+Check the installations:
 
 ```powershell
 git --version
 py -3.12 --version
 ```
 
-If `py -3.12` is not found, install Python 3.12. To list Python versions installed on the PC, run `py -0p`.
+If `py -3.12` is not found, install Python 3.12 and reopen the terminal. `py -0p` lists Python versions registered with the Windows launcher.
 
-### Step B — Clone the repository
+### Step B — Download the project from GitHub
 
-These commands use your home directory, so they work without knowing your Windows username or hard-coding a machine-specific folder.
+These commands use your account's home directory; they do not hard-code a particular Windows username:
 
 ```powershell
 cd $HOME
@@ -91,186 +84,65 @@ git clone https://github.com/mohammednaeemog-sys/AI-Art-Style-Transfer.git
 cd AI-Art-Style-Transfer
 ```
 
-The source is now downloaded into a new `AI-Art-Style-Transfer` folder inside your home directory. You can choose another destination; just `cd` into the cloned repository before continuing.
+The repository is now in a new `AI-Art-Style-Transfer` directory under your home folder. You can clone it elsewhere if you prefer; continue the remaining commands from inside the cloned repository.
 
-If Git asks you to authenticate, follow the GitHub sign-in prompts. Never put a GitHub token in `app.py`, `.env` files that are committed, or chat messages.
+If the repository already exists at that location, do not clone over it. Open the existing directory or choose a different parent directory.
 
-### Step C — Create a new virtual environment
-
-This creates a clean Python environment just for this app:
+### Step C — Create a fresh virtual environment
 
 ```powershell
 py -3.12 -m venv .venv
-```
-
-You do **not** have to activate the environment if you always use the `.venv` Python executable directly. That avoids common PowerShell activation-policy issues.
-
-Upgrade pip:
-
-```powershell
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
 ```
 
-### Step D — Install PyTorch for this PC
+A virtual environment keeps this application's Python packages separate from other projects. You do not have to activate it if you use the explicit `.venv\Scripts\python.exe` path in the commands below.
 
-Choose the PyTorch build for the hardware in the new computer:
+### Step D — Install a suitable PyTorch build
 
-- Open the official installer selector: https://pytorch.org/get-started/locally/
-- Choose **Windows**, **Pip**, **Python**, and the correct compute platform.
-- For an NVIDIA GPU, choose a CUDA option supported by the installed driver and available PyTorch wheels.
-- For a CPU-only PC, choose the CPU build.
+PyTorch needs to match the PC's operating system and compute hardware.
 
-The selector gives a command similar to `pip3 install torch torchvision ...`. Run the equivalent command with this new environment's Python so it installs into `.venv`. For example, if the selector specifies an `--index-url`, keep it and use this command shape:
+1. Open the official PyTorch selector: https://pytorch.org/get-started/locally/
+2. Choose Windows, Pip, Python, and the correct compute platform.
+3. Copy the command it provides for your PC. For an NVIDIA GPU, use a CUDA option supported by the driver and current PyTorch wheels. For a CPU-only PC, choose CPU.
+4. Run that command using the new virtual environment's Python/pip. If the selector provides a command starting with `pip install`, use the same package and index arguments but invoke pip as:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install torch torchvision --index-url <PASTE-THE-INDEX-URL-FROM-THE-PYTORCH-SELECTOR>
+.\.venv\Scripts\python.exe -m pip install
 ```
 
-Replace the placeholder with the exact index URL from the official selector. Do not paste the angle brackets literally, and do not blindly use a CUDA command intended for a different PC.
+For example, append `torch torchvision` and the exact `--index-url` or other arguments printed by the official selector. Do **not** copy an example CUDA index URL from an unrelated PC or blindly use a command from an old tutorial.
 
-### Step E — Install the app's remaining dependencies
+### Step E — Install the project's remaining requirements
 
-From inside the cloned repository:
+From inside the repository root:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-The requirements file keeps the Diffusers/Transformers/PEFT versions in a compatible set. Avoid separately upgrading one of those packages without checking compatibility.
-
-Verify the environment:
+Then check whether PyTorch detects CUDA:
 
 ```powershell
 .\.venv\Scripts\python.exe -c "import torch; print('PyTorch:', torch.__version__); print('CUDA available:', torch.cuda.is_available()); print('GPU:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU mode')"
 ```
 
-On an NVIDIA PC, `CUDA available` should normally be `True`. If it is `False`, revisit the PyTorch selector and reinstall the correct build into `.venv`.
+On an NVIDIA PC, `CUDA available` should normally be `True`. If it is `False`, revisit the official PyTorch selector and correct the installation in `.venv` before diagnosing application-level performance.
 
-### Step F — Start the app
-
-```powershell
-.\.venv\Scripts\python.exe app.py
-```
-
-Wait for Gradio to print a local URL. Open the exact URL shown in the terminal, normally:
-
-```text
-http://127.0.0.1:7860
-```
-
-To stop the server, focus the terminal and press **Ctrl+C**.
-
-**You do not need to copy the old `data/`, `models/`, `outputs/`, or `.venv` folders from another PC to make a fresh install.** The app creates its working folders, and model weights are downloaded on demand. You do need internet access for the initial downloads.
-
----
-
-## 4. Start the app
-
-### Each time after setup
-
-Open PowerShell and move into the folder where you cloned the repository. For the clone command above:
-
-```powershell
-cd $HOME\AI-Art-Style-Transfer
-.\.venv\Scripts\python.exe app.py
-```
-
-If you chose another clone location, use that location instead.
-
-### In VS Code
-
-1. Open VS Code.
-2. Choose **File → Open Folder**.
-3. Select the cloned `AI-Art-Style-Transfer` folder.
-4. Choose **Terminal → New Terminal**.
-5. Run:
+### Step F — Start AI Art Studio
 
 ```powershell
 .\.venv\Scripts\python.exe app.py
 ```
 
-The app opens in your browser. The terminal must stay running while you use it.
+Wait for Gradio to print a local URL, normally `http://127.0.0.1:7860`, and open the exact URL shown. Keep the terminal running while using the app. Press **Ctrl+C** in that terminal to stop it.
+
+The first use of some styles may download several gigabytes of model files. This is expected; do not close the app while a download is in progress.
 
 ---
 
-## 5. How model downloads work
+## 4. Install from GitHub on a fresh macOS or Linux PC
 
-The source-code repository intentionally does **not** store large model weights. On the first use of a style, the app may download the base diffusion model, ControlNet, and a style adapter from the model provider. The downloads are cached on that computer, so subsequent runs usually reuse them.
-
-- Keep an internet connection for first-time downloads.
-- Allow several GB of free space; different base models and adapters increase the total.
-- A download can take a while. Do not close the terminal while a model is downloading.
-- Some model repositories may require you to sign in, read/accept terms, or request access on the model page. Follow the instructions on that model's card. Never paste authentication tokens into code or screenshots.
-- Downloaded model files are stored in local PyTorch/Hugging Face caches and/or the ignored `models/` directory. They are not automatically synchronized between PCs.
-- For an 8 GB GPU, diffusion can be slow with CPU offloading. Close other GPU-heavy programs if generation runs out of memory.
-
----
-
-## 6. Update the app later with `git pull`
-
-Use this section when the project is already cloned on the computer and you want the latest code from GitHub. You do not need to clone it again every time.
-
-First, go to the repository folder. Using the default clone location:
-
-```powershell
-cd $HOME\AI-Art-Style-Transfer
-git status
-```
-
-If you have modified files you want to keep, commit them or back them up before updating. Then run:
-
-```powershell
-git pull --ff-only origin main
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe app.py
-```
-
-`git pull` updates version-controlled code and documentation. It does **not** download your old input photos or generated images from the other PC.
-
-If `git pull` says the branch cannot be fast-forwarded, stop and inspect `git status` and `git log --oneline --decorate -5`. Do not force-push or delete local changes just to make the error disappear.
-
----
-
-## 7. Use the app from a phone
-
-The app runs on the **PC**. Your phone only opens the interface in its browser. Both devices must be connected to the **same trusted private Wi-Fi network**.
-
-1. Start the app on your PC by opening PowerShell in the cloned project folder.
-2. Set the host and port so the app is reachable from other devices on the local network:
-
-```powershell
-$env:AI_ART_STUDIO_HOST="0.0.0.0"
-$env:AI_ART_STUDIO_PORT="7860"
-.\.venv\Scripts\python.exe app.py
-```
-
-3. On the PC, open another PowerShell terminal and run:
-
-```powershell
-ipconfig
-```
-
-Find the **IPv4 Address** of the active Wi-Fi adapter, for example `192.168.1.23`.
-
-4. If Windows Firewall prompts you, allow Python for **Private networks only**.
-5. Connect your phone to the same Wi-Fi.
-6. In the phone browser, enter the PC's address with port 7860. For example, if the PC IPv4 address was `192.168.1.23`, open:
-
-```text
-http://192.168.1.23:7860
-```
-
-Replace the example address with the actual IPv4 address from your PC. Keep the app terminal running while using it.
-
-**Security:** local-network mode allows devices that can reach your PC on that network to access the interface. Use only a trusted private network. Do not configure router port forwarding or expose this unauthenticated interface to the public internet. To return to PC-only access, stop the app and restart it without `AI_ART_STUDIO_HOST`; it defaults to `127.0.0.1`.
-
----
-
-## 8. Run on macOS or Linux
-
-Git, Python, PyTorch, and compatible dependencies are required. Diffusion model execution is generally best supported on a suitable NVIDIA GPU; CPU mode will be slower.
-
-Install Git and a compatible Python version using your OS's official package/download instructions. Then open Terminal:
+The Windows instructions above are the most direct path for the original development setup. On macOS or Linux, install Git and a compatible Python version using the operating system's official installer/package instructions, then run:
 
 ```bash
 git clone https://github.com/mohammednaeemog-sys/AI-Art-Style-Transfer.git
@@ -279,175 +151,314 @@ python3 -m venv .venv
 ./.venv/bin/python -m pip install --upgrade pip
 ```
 
-Install PyTorch using the official selector for your OS and hardware: https://pytorch.org/get-started/locally/ . Then install app dependencies and launch:
+Install PyTorch using the official selector for your OS/hardware: https://pytorch.org/get-started/locally/ . Then install the project requirements and launch:
 
 ```bash
 ./.venv/bin/python -m pip install -r requirements.txt
 ./.venv/bin/python app.py
 ```
 
-Open the local URL printed by Gradio. For phone access on the same private Wi-Fi, set environment variables before starting the app:
+Open the local URL printed by Gradio. NVIDIA GPU acceleration depends on compatible hardware, drivers, and a suitable PyTorch build. The app's current device selection uses CUDA when available and otherwise CPU; an Apple Silicon/MPS-specific path is not explicitly configured, so Apple GPU acceleration is not guaranteed.
+
+For phone access from a Mac/Linux host on a trusted private Wi-Fi network, start the app with:
 
 ```bash
 AI_ART_STUDIO_HOST=0.0.0.0 AI_ART_STUDIO_PORT=7860 ./.venv/bin/python app.py
 ```
 
-Use your PC's local IP address on the phone, not `127.0.0.1`. Do not expose the app to an untrusted or public network.
+Find the host computer's local IP address using `ip addr` on Linux or `ifconfig`/System Settings on macOS, then open `http://<HOST-LOCAL-IP>:7860` on the phone while both devices are on the same trusted Wi-Fi. Do not expose the app to an untrusted or public network.
 
 ---
 
-## 9. Available styles and honest limitations
+## 4. Run the app
 
-| Style | Model/method | What to expect |
+After the first installation, you do not need to reinstall packages every time.
+
+In PowerShell:
+
+```powershell
+cd $HOME\AI-Art-Style-Transfer
+.\.venv\Scripts\python.exe app.py
+```
+
+If you cloned the repository to a different location, `cd` to that location instead.
+
+In VS Code:
+
+1. Choose **File → Open Folder**.
+2. Open the cloned `AI-Art-Style-Transfer` folder.
+3. Choose **Terminal → New Terminal**.
+4. Run `.\.venv\Scripts\python.exe app.py`.
+5. Open the local URL printed in the terminal.
+
+If the terminal reports that port 7860 is already in use, choose another port:
+
+```powershell
+$env:AI_ART_STUDIO_PORT="7861"
+.\.venv\Scripts\python.exe app.py
+```
+
+Open the new URL printed in the terminal.
+
+---
+
+## 5. Available styles and how they work
+
+The selector includes 18 options. The model path may vary if a specific checkpoint cannot be downloaded or loaded.
+
+| Style | Intended model/method | What to expect |
 |---|---|---|
-| **Anime** | AnimeGANv2 feed-forward neural model | Fast photo-to-anime appearance; details may change. |
-| **Starry Night (Neural)** | Dedicated feed-forward style model | Van Gogh-inspired colors/texture; a model-loader failure must be investigated rather than assumed successful. |
-| **Candy, Mosaic, Rain Princess, Udnie (Neural)** | Published fast-neural-style checkpoints | Each is a fixed artistic style. |
-| **Pop Art** | Stable Diffusion 1.5 + Canny ControlNet + Pop Art LoRA when compatible | Comic-book/printmaking-inspired stylization. |
-| **Art Nouveau** | SDXL + SDXL Canny ControlNet + Mucha LoRA when compatible | Decorative botanical illustration; SDXL is heavier and slower. |
-| **Ukiyo-e** | SD 1.5 + Canny ControlNet + Hiroshige LoRA when compatible | Japanese woodblock-print-inspired look. |
-| **Impressionism** | SD 1.5 + Canny ControlNet + Monet LoRA when compatible | Painterly colors and brushwork. |
-| **Cyberpunk** | Cyberpunk-focused checkpoint + Canny ControlNet, or an SD 1.5 prompt fallback | Neon/futuristic styling; checkpoint compatibility matters. |
-| **Surrealism** | SD 1.5 + Canny ControlNet + style-specific prompt | Dreamlike appearance; exact semantic object placement is not guaranteed. |
-| **Art Deco** | SD 1.5 + Canny ControlNet + prompt or compatible adapter | Geometric vintage-poster look. |
-| **Watercolor** | SD 1.5 + Canny ControlNet + style prompt | Watercolor-inspired washes. |
-| **Pencil Sketch** | SD 1.5 + Canny ControlNet + style prompt | Graphite/monochrome look. |
-| **Oil Painting** | SD 1.5 + Canny ControlNet + oil-paint adapter when compatible | Painted surfaces and brush strokes. |
-| **Pixel Art** | SD 1.5 + Canny ControlNet + PixelArtRedmond adapter when compatible | Pixel-art illustration; check its special license. |
-| **Reference Style Transfer** | Experimental VGG19 optimization | Transfers texture/color statistics, but can create noisy output and does not recreate the reference composition semantically. |
+| **Anime** | AnimeGANv2; diffusion fallback if unavailable | Anime-like appearance; face and object details can change. |
+| **Starry Night (Neural)** | Dedicated fixed-style feed-forward model; prompt/ControlNet fallback if unavailable | Van Gogh-inspired colors and painted texture. |
+| **Candy (Neural)** | Fixed-style fast-neural-style checkpoint; fallback if unavailable | Vivid painterly textures associated with the checkpoint. |
+| **Mosaic (Neural)** | Fixed-style fast-neural-style checkpoint; fallback if unavailable | Mosaic-like texture from the checkpoint. |
+| **Rain Princess (Neural)** | Fixed-style fast-neural-style checkpoint; fallback if unavailable | Colorful painterly effect from the checkpoint. |
+| **Udnie (Neural)** | Fixed-style fast-neural-style checkpoint; fallback if unavailable | The checkpoint's specific abstract/painterly style. |
+| **Pop Art** | Stable Diffusion 1.5 + Canny ControlNet + compatible Pop Art LoRA when it loads | Comic-book shapes, stronger colors and printmaking-inspired details. |
+| **Art Nouveau** | SDXL + SDXL Canny ControlNet + Mucha LoRA when compatible | Decorative botanical and poster-like illustration. SDXL is more memory-demanding. |
+| **Ukiyo-e** | Stable Diffusion 1.5 + Canny ControlNet + Hiroshige LoRA when compatible | Japanese woodblock-print-inspired colors and linework. |
+| **Impressionism** | Stable Diffusion 1.5 + Canny ControlNet + Monet LoRA when compatible | Painterly colors and brushwork. |
+| **Cyberpunk** | Cyberpunk-focused checkpoint + Canny ControlNet; baseline prompt fallback if needed | Neon/futuristic styling; exact model compatibility matters. |
+| **Surrealism** | Stable Diffusion 1.5 + Canny ControlNet + style-specific prompt | Dreamlike atmosphere; not guaranteed to invent specific objects. |
+| **Art Deco** | Stable Diffusion 1.5 + Canny ControlNet + style-specific prompt | Geometric, vintage-poster-inspired styling. |
+| **Watercolor** | Stable Diffusion 1.5 + Canny ControlNet + style-specific prompt | Watercolor-inspired washes and edges. |
+| **Pencil Sketch** | Stable Diffusion 1.5 + Canny ControlNet + style-specific prompt | Graphite/monochrome drawing style. |
+| **Oil Painting** | Stable Diffusion 1.5 + Canny ControlNet + compatible oil-painting LoRA when it loads | Painted surfaces and brushstroke-like texture. |
+| **Pixel Art** | Stable Diffusion 1.5 + Canny ControlNet + compatible PixelArtRedmond LoRA when it loads | Pixel-art-inspired illustration. |
+| **Reference Style Transfer** | Experimental VGG19 neural optimization using your uploaded style artwork | Transfers texture/color statistics; can look noisy and does not semantically recreate the reference image. |
 
-The app uses **image-to-image + Canny ControlNet** for diffusion styles. Edge guidance helps preserve broad structure; it does not guarantee the exact same face, sign lettering, small objects, or number of details. If a LoRA cannot load, the app's status should tell you that it used a prompt + ControlNet fallback. A fallback is less style-specific than a successfully loaded adapter.
+### Important: fallback is not the same as success
 
-### General settings advice
-
-- Start with art strength around `0.70–0.82`.
-- Start with composition/edge preservation around `0.65–0.80`.
-- Start with `32–36` diffusion steps.
-- For a portrait, use lower strength (around `0.60–0.72`) and higher composition preservation (around `0.75–0.85`).
-- Raise strength gradually if the effect looks too close to the original; lower it if faces or important objects change.
-- More steps are not a guarantee of better style quality. Selecting a suitable, compatible style model matters more.
+For diffusion-based styles, the app tries to load the configured base checkpoint, ControlNet, and compatible adapter. If a preferred model cannot load, it attempts a fallback path and reports a warning in the status message or terminal. A fallback can generate an image, but it may be less faithful to the intended style. If the status reports that the dedicated model failed, do not assume the dedicated model produced the result.
 
 ---
 
-## 10. Local files, privacy, and GitHub publishing
+## 6. Recommended settings
 
-### What stays local
+These are **starting points**, not proven universal optima.
 
-- Source photographs uploaded into the app.
-- Generated results saved in `outputs/`.
-- Downloaded model weights and caches.
-- The `.venv` Python environment.
+- **Art style strength:** start around `0.70–0.82`. Increase it for a stronger artistic transformation; lower it if the subject changes too much.
+- **Composition / edge preservation:** start around `0.65–0.80`. Higher values usually preserve broad outlines more strongly; lower values allow more freedom.
+- **Diffusion quality steps:** start around `32–36`. More steps take longer and do not guarantee a better result.
+- **Seed:** `-1` selects a random seed. Enter a non-negative integer to try to repeat a comparable diffusion run with the same model and settings.
 
-The `.gitignore` is intended to keep private images, data, model weights, environments, and generated outputs out of future Git commits. Git ignores do not remove files that were already committed in repository history; inspect the GitHub repository if you are unsure whether a sensitive file was previously published.
+For portraits, start with lower style strength (about `0.60–0.72`) and higher structure guidance (about `0.75–0.85`). For landscapes or graphic art, a stronger transformation may work better. Different models respond differently, so compare results rather than assuming one setting will always be best.
 
-### Publish one approved result
+---
 
-The app has a manual showcase publishing workflow:
+## 7. Run the app from a phone
+
+The application runs on your PC; the phone opens the interface in its browser. Both devices must be connected to the **same trusted private Wi-Fi network**.
+
+1. Start PowerShell in the project root on the PC.
+2. Set the network host and port, then start the application:
+
+```powershell
+$env:AI_ART_STUDIO_HOST="0.0.0.0"
+$env:AI_ART_STUDIO_PORT="7860"
+.\.venv\Scripts\python.exe app.py
+```
+
+3. On the PC, open another terminal and run:
+
+```powershell
+ipconfig
+```
+
+4. Find the IPv4 address of the active Wi-Fi adapter, for example `192.168.1.23`.
+5. If Windows Firewall asks, allow Python on **Private networks only**.
+6. Connect the phone to the same Wi-Fi. In its browser, enter the PC's actual IPv4 address and port, for example:
+
+```text
+http://192.168.1.23:7860
+```
+
+Replace the example IP with the one shown by `ipconfig`. Do not type `127.0.0.1` on the phone; that would point to the phone itself.
+
+Keep the app running on the PC. The PC does the model inference and must remain powered on.
+
+**Security:** `0.0.0.0` makes the app reachable from devices that can access the PC on that network. Use only a trusted private Wi-Fi network. Do not configure router port forwarding or expose this unauthenticated app to the public internet. Stop the app with Ctrl+C when finished. Environment-variable settings in the current PowerShell session do not persist after you close that shell.
+
+---
+
+## 8. Update the app with Git
+
+When you have an existing clone, use `git pull` to download committed changes. You do not need to clone the project again for every update.
+
+First, go to the repository folder and check for local edits:
+
+```powershell
+cd $HOME\AI-Art-Style-Transfer
+git status
+```
+
+If you have uncommitted work, back it up or commit it before pulling. Then run:
+
+```powershell
+git pull --ff-only origin main
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe app.py
+```
+
+If the update changes a major dependency, reread the setup notes and verify CUDA afterwards.
+
+If `git pull --ff-only` fails, stop and inspect `git status`, `git remote -v`, and `git log --oneline --decorate -5`. Do not force-push or discard local changes just to clear an error.
+
+### Publish a code/documentation update
+
+Before committing, inspect the list of files:
+
+```powershell
+git status --short
+git add app.py requirements.txt README.md .gitignore
+git diff --cached --name-only
+git diff --cached --check
+```
+
+Only stage files you intend to publish. Do not commit input photographs, datasets, downloaded weights, private outputs, credentials, or `.env` files. After reviewing the list, commit and push:
+
+```powershell
+git commit -m "Update AI Art Studio documentation"
+git push origin main
+```
+
+---
+
+## 9. Local files, privacy, and publishing examples
+
+### Files stored locally
+
+- Input photographs are processed by the app on your computer.
+- Generated images are saved to the local `outputs/` directory.
+- Downloaded model files are cached locally by their libraries and/or the project's ignored model directory.
+- The `.venv` folder contains your local Python environment.
+
+The `.gitignore` is designed to exclude the virtual environment, common input image filenames, `outputs/`, data folders and model files from **future untracked commits**. Git ignore rules do not remove files that were committed previously. If any private image or model file was committed in the past, inspect GitHub history and remove it from the repository/history as needed.
+
+### Publish one approved example
+
+The app includes an explicit publishing workflow:
 
 1. Generate a result.
-2. Inspect it and make sure you have permission to share it.
-3. Tick the public-publishing approval checkbox.
+2. Inspect it and confirm you have the right to share it.
+3. Tick the approval checkbox.
 4. Type `PUBLISH`.
 5. Click **Publish approved image to GitHub**.
 
-The intended workflow copies only that approved output into `examples/`, stages only that file, commits it, and pushes to `origin`. It does not upload the original input photo or the other files in `outputs/` through that button.
+The button is designed to copy only the latest result to `examples/`, stage only that image, commit it and push to the configured `origin` remote. If unrelated files are already staged, the publishing function is intended to stop rather than commit them. Publishing requires Git to be installed and GitHub push authentication to be configured.
 
-The repository is public, so a published showcase image may be copied by others. Do not publish private portraits or other images without consent.
+The repository is public. Anyone may view or copy a showcase image after publication. Never publish private photos, identifiable portraits without permission, or an image whose license prohibits sharing.
+
+---
+
+## 10. Gallery and sample outputs
+
+No generated image should be presented as a model output until the app has actually generated it. This repository may have no examples in a fresh clone because sample results are optional and only reviewed outputs should be published.
+
+After you approve an output, the publishing button places it in `examples/`. You can then add a gallery entry here, using the **actual filename** of the image committed to GitHub. For example:
+
+```markdown
+## Showcase
+
+### Cyberpunk
+![Approved Cyberpunk output](examples/your-actual-cyberpunk-filename.png)
+
+### Impressionism
+![Approved Impressionism output](examples/your-actual-impressionism-filename.png)
+```
+
+Replace those example filenames with files that really exist in the repository. Do not leave a sample entry that points to a nonexistent file and do not label a mock/generated illustration as if it came from the application.
 
 ---
 
 ## 11. Troubleshooting
 
-### `py -3.12` is not found
+### Python launcher cannot find Python 3.12
 
-Install Python 3.12 from https://www.python.org/downloads/windows/ and open a new PowerShell terminal. Run `py -0p` to see available Python installations.
+Install Python 3.12 from https://www.python.org/downloads/windows/, reopen PowerShell, then try `py -3.12 --version`. `py -0p` lists available Python installations.
 
-### PowerShell blocks `.venv` activation
+### PowerShell blocks environment activation
 
-You can avoid activation and run the environment directly:
+Activation is optional. Run the app through the virtual environment's Python executable:
 
 ```powershell
 .\.venv\Scripts\python.exe app.py
 ```
 
-If you prefer activation, use a process-only policy (it applies to the current PowerShell process only), then activate:
+If you prefer activation, run the following in the current PowerShell process, then activate:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
 .\.venv\Scripts\Activate.ps1
 ```
 
-### `No module named ...`, or a dependency import error
+### Missing Python module or dependency import error
 
-Make sure the terminal is in the cloned project root, then run:
+Confirm that the terminal is in the repository root, then run:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-Restart the app after installation. Do not randomly upgrade Diffusers, Transformers, PEFT and Hugging Face Hub independently.
+Restart the app. Avoid upgrading Diffusers, Transformers, PEFT, and Hugging Face Hub independently; incompatible versions can break adapter loading.
 
-### `CUDA available: False`
+### CUDA is unavailable
 
-Install the correct PyTorch build using https://pytorch.org/get-started/locally/. A CPU build can run some functionality but diffusion is much slower.
+Run the PyTorch/CUDA verification command in Step E. If a GPU is present but CUDA reports `False`, reinstall the correct PyTorch build using the official selector: https://pytorch.org/get-started/locally/
 
-### CUDA out of memory
+### CUDA out of memory or generation is too slow
 
-Close other GPU-heavy applications, use a smaller input image, lower diffusion steps, or choose a lighter style model. SDXL is heavier than SD 1.5. If memory errors persist, try CPU mode understanding that it will be much slower.
+Close other GPU-heavy applications, reduce image size or diffusion steps, and avoid the SDXL-based Art Nouveau route if memory is limited. CPU mode is slower. A GPU with 8 GB VRAM may need CPU offloading and can still be slow or hit memory limits depending on the model and software configuration.
 
-### A model download fails or returns HTTP 401/403
+### Model download fails or returns 401/403
 
-Check internet access, inspect the terminal error, and visit the exact model card. Some model repositories may require account sign-in or acceptance of their terms. Retry after resolving the access issue. Do not post access tokens in screenshots or code.
+Check the internet connection and the exact model card. Some model providers require sign-in, agreement to model terms, or permission. Resolve those requirements on the provider's site. Never paste access tokens into source code, public screenshots, or chat messages.
 
-### A style adapter fails
+### Style adapter fails to load
 
-Read the on-screen status and terminal. If the app uses a prompt + ControlNet fallback, the output may be less distinctive. A fallback is not evidence that the intended LoRA was successfully loaded.
+Read the status message and terminal. The app may attempt a prompt + ControlNet fallback; that does not mean the dedicated adapter worked. Record the selected style and complete error text before troubleshooting.
 
-### The local page does not open
+### Local page does not open
 
-Keep the app terminal running. Open the exact URL printed there. If port 7860 is occupied, run:
+Keep the app terminal running and open the exact URL it prints. If port 7860 is occupied, set `AI_ART_STUDIO_PORT` to a free port such as `7861` before launching. For phone access, use the PC's local IPv4 address and the same port.
 
-```powershell
-$env:AI_ART_STUDIO_PORT="7861"
-python app.py
-```
+### Fresh clone cannot find a previous image
 
-Then use the new URL printed by the app. For phone access, use the PC's IPv4 address and the correct port.
-
-### `git clone` says the folder already exists
-
-Choose a different parent folder or inspect the existing directory before deleting it. Do not delete local photos or outputs you want to keep.
-
-### `git pull` fails
-
-Run:
-
-```powershell
-git status
-git remote -v
-git branch --show-current
-```
-
-Back up or commit wanted local changes before pulling. Do not force-push to work around a rejected update without reviewing repository history.
+That is expected. `git clone` downloads committed files only. It will not recover ignored local photos, `outputs/`, `.venv`, or cached model weights from your old PC. Keep separate backups of any local file you want to preserve.
 
 ---
 
-## 12. Model sources and licenses
+## 12. Models, access, and licensing
 
-Models are downloaded from their publishers; their weights are not included in this source repository. The app may work locally for free after download, but the model licenses are not all identical. Review each license/model card before redistribution, public demonstrations, or commercial use.
+Model weights are downloaded from third-party publishers and are not bundled with the source repository. A model being publicly downloadable does not mean all uses, redistribution, or commercial use are permitted. Review each model's current card and license before distributing this application, weights, or generated results.
 
 - [Stable Diffusion 1.5 base](https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5)
-- [ControlNet Canny for SD 1.5](https://huggingface.co/lllyasviel/control_v11p_sd15_canny)
+- [Canny ControlNet for SD 1.5](https://huggingface.co/lllyasviel/control_v11p_sd15_canny)
 - [SDXL base](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0)
-- [SDXL Canny ControlNet](https://huggingface.co/diffusers/controlnet-canny-sdxl-1.0)
+- [Canny ControlNet for SDXL](https://huggingface.co/diffusers/controlnet-canny-sdxl-1.0)
 - [Pop Art LoRA](https://huggingface.co/DesiAEye/DesiAEye-Pop-Art-LORA)
 - [Alphonse Mucha / Art Nouveau LoRA](https://huggingface.co/KappaNeuro/alphonse-mucha-style)
 - [Hiroshige / Ukiyo-e LoRA](https://huggingface.co/espressosession/latent-studio-hiroshige-lora)
 - [Monet / Impressionism LoRA](https://huggingface.co/J-YOON/lora-monet-sd1.5)
-- [Cyberpunk Anime Diffusion checkpoint](https://huggingface.co/AdamOswald1/Cyberpunk-Anime-Diffusion_with_support_for_Gen-Imp_characters)
+- [Cyberpunk diffusion checkpoint](https://huggingface.co/AdamOswald1/Cyberpunk-Anime-Diffusion_with_support_for_Gen-Imp_characters)
 - [Oil-painting LoRA](https://huggingface.co/Jehugging/oilpaint_lora)
 - [PixelArtRedmond LoRA](https://huggingface.co/artificialguybr/pixelartredmond-1-5v-pixel-art-loras-for-sd-1-5)
 - [Starry Night fast-style model](https://huggingface.co/Rohanify/Brawnz-StyleTransferSN)
 - [PyTorch fast-neural-style examples](https://github.com/pytorch/examples/tree/main/fast_neural_style)
 
-Model cards, file names, licensing, hosted access requirements, and Python package compatibility can change. The README is a starting point, not a permanent guarantee about third-party availability.
+Model files, filenames, access policies, licenses and compatibility may change. The application may need updates if a third-party repository changes or a particular checkpoint no longer loads.
+
+The repository source itself should also have an explicit `LICENSE` file if you want other people to know what permissions apply to reusing your code. Do not assume a permissive project-code license merely because the repository is public.
+
+---
+
+## 13. Known limitations
+
+- The intended style adapter can fail to load due to model availability, access rules, dependency compatibility, or base-model incompatibility. The app attempts fallbacks for some paths; fallback quality may be lower.
+- The reference VGG19 path is slow and may transfer texture without producing a convincing semantic recreation of the reference artwork.
+- Canny ControlNet helps guide broad structure but does not guarantee exact object/face/text preservation.
+- A stronger style setting may improve the artistic effect while reducing source-image fidelity.
+- CPU mode can be extremely slow for diffusion.
+- The complete set of model combinations has not been verified on every Windows/macOS/Linux system, Python version, and GPU. Verify each selected style in the environment where you intend to use it before calling the setup complete.
+
+**Author:** Mohammed Naeem
