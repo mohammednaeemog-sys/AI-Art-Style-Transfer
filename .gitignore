@@ -25,4 +25,33 @@ datasets/
 *.safetensors
 *.ckpt
 *.pth
+*.pt# Python cache and virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+.venv-*/
+venv/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Private input photographs
+input*.jpg
+input*.jpeg
+input*.png
+input*.webp
+input*.bmp
+
+# Local datasets, generated images, and model caches
+data/
+datasets/
+outputs/
+models/
+
+# Model weights
+*.safetensors
+*.ckpt
+*.pth
 *.pt
