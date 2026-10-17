@@ -1,27 +1,28 @@
-
+# Python environments and cache
 .venv/
-venv/
+.venv-*/
 __pycache__/
 *.py[cod]
 
+# Generated images and outputs
+/outputs/
+
+# Personal source photographs in project root
+/*.jpg
+/*.jpeg
+/*.png
+/*.webp
+/*.bmp
+
+# API keys and environment secrets
 .env
 .env.*
 !.env.example
-.kaggle/
-kaggle.json
-**/kaggle.json
 
+# Downloaded datasets and model weights
 data/
 datasets/
-*.zip
-
-models/
-checkpoints/
-outputs/
 *.safetensors
 *.ckpt
 *.pth
 *.pt
-
-.vscode/
-.idea/
