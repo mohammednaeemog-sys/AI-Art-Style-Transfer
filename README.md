@@ -461,4 +461,4 @@ The repository source itself should also have an explicit `LICENSE` file if you 
 - CPU mode can be extremely slow for diffusion.
 - The complete set of model combinations has not been verified on every Windows/macOS/Linux system, Python version, and GPU. Verify each selected style in the environment where you intend to use it before calling the setup complete.
 
-##Thanks
+
